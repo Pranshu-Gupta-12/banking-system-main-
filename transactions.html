@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - Banking System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .transaction-table th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .transaction-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .transaction-table tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">💳 Banking System</h1>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="accounts-list.html">All Accounts</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>Transaction History</h2>
+            
+            <div class="form-box">
+                <div class="form-group">
+                    <label for="transAccountNumber">Enter Account Number:</label>
+                    <div class="input-group">
+                        <input type="text" id="transAccountNumber" placeholder="e.g., ACC001">
+                        <button onclick="loadTransactions()" class="btn">Load Transactions</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="transactionsInfo" style="display: none;">
+                <h3>Transactions for Account: <span id="transAccNum"></span></h3>
+                <table class="transaction-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsList">
+                    </tbody>
+                </table>
+                <br>
+                <a href="index.html" class="btn btn-secondary">Back to Home</a>
+            </div>
+
+            <div id="noTrans" class="message error" style="display: none;">
+                No transactions found for this account.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Banking System. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function loadTransactions() {
+            const accountNumber = document.getElementById('transAccountNumber').value;
+            const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+            const account = accounts.find(acc => acc.accountNumber === accountNumber);
+
+            if (!account) {
+                document.getElementById('transactionsInfo').style.display = 'none';
+                document.getElementById('noTrans').style.display = 'block';
+                return;
+            }
+
+            const transactions = account.transactions || [];
+            if (transactions.length === 0) {
+                document.getElementById('transactionsInfo').style.display = 'none';
+                document.getElementById('noTrans').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('transAccNum').textContent = accountNumber;
+            const tbody = document.getElementById('transactionsList');
+            tbody.innerHTML = '';
+
+            transactions.forEach(trans => {
+                const row = document.createElement('tr');
+                const date = new Date(trans.date).toLocaleDateString();
+                row.innerHTML = `
+                    <td>${trans.type}</td>
+                    <td>$${trans.amount.toFixed(2)}</td>
+                    <td>$${trans.balance_after.toFixed(2)}</td>
+                    <td>${date}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('transactionsInfo').style.display = 'block';
+            document.getElementById('noTrans').style.display = 'none';
+        }
+
+        document.getElementById('transAccountNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') loadTransactions();
+        });
+    </script>
+</body>
+</html>

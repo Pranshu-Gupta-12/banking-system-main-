@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Accounts - Banking System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .accounts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .accounts-table th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .accounts-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .accounts-table tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">💳 Banking System</h1>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="accounts-list.html" class="active">All Accounts</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>All Accounts</h2>
+            
+            <div id="accountsList">
+                <table class="accounts-table">
+                    <thead>
+                        <tr>
+                            <th>Account Number</th>
+                            <th>Owner Name</th>
+                            <th>Account Type</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="noAccounts" class="message error" style="display: none;">
+                No accounts found. <a href="create-account.html">Create an account</a>
+            </div>
+
+            <br>
+            <a href="index.html" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Banking System. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function displayAccounts() {
+            const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+
+            if (accounts.length === 0) {
+                document.getElementById('accountsList').style.display = 'none';
+                document.getElementById('noAccounts').style.display = 'block';
+                return;
+            }
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            accounts.forEach(account => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${account.accountNumber}</td>
+                    <td>${account.ownerName}</td>
+                    <td>${account.accountType}</td>
+                    <td>$${account.balance.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('accountsList').style.display = 'block';
+            document.getElementById('noAccounts').style.display = 'none';
+        }
+
+        // Load accounts when page loads
+        window.addEventListener('DOMContentLoaded', displayAccounts);
+    </script>
+</body>
+</html>

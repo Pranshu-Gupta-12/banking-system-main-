@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Banking System</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        .analytics-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .chart-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        .chart-box h3 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            animation: slideInDown 0.6s ease-out;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+            animation: bounceIn 0.6s ease-out;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h4 {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .stat-card.deposits {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .stat-card.withdrawals {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .stat-card.transfers {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: slideInDown 0.6s ease-out;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group input {
+            flex: 1;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">💳 Banking System</h1>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="accounts-list.html">All Accounts</a></li>
+                <li><a href="analytics.html" class="active">Analytics</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>Transaction Analytics</h2>
+            
+            <div class="filter-section">
+                <div class="filter-group">
+                    <input type="text" id="analyticsAccount" placeholder="Enter account number to view analytics (optional)">
+                    <button onclick="loadAnalytics()" class="btn">Load Analytics</button>
+                    <button onclick="loadAllAnalytics()" class="btn btn-secondary">All Accounts</button>
+                </div>
+            </div>
+
+            <div id="noData" class="message error" style="display: none;">
+                No transaction data available for the selected account.
+            </div>
+
+            <div id="analyticsData" style="display: none;">
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card deposits">
+                        <h4>Total Deposits</h4>
+                        <div class="value" id="totalDeposits">$0.00</div>
+                    </div>
+                    <div class="stat-card withdrawals">
+                        <h4>Total Withdrawals</h4>
+                        <div class="value" id="totalWithdrawals">$0.00</div>
+                    </div>
+                    <div class="stat-card transfers">
+                        <h4>Total Transfers</h4>
+                        <div class="value" id="totalTransfers">$0.00</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="analytics-container">
+                    <div class="chart-box">
+                        <h3>Transaction Types Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-box">
+                        <h3>Deposits vs Withdrawals</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="depWithChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-box">
+                        <h3>Transaction Timeline</h3>
+                        <div class="chart-wrapper" style="height: 350px;">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-box">
+                        <h3>Amount Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="amountChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <br>
+        <a href="index.html" class="btn btn-secondary">Back to Home</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Banking System. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        let typeChart, depWithChart, timelineChart, amountChart;
+
+        function loadAnalytics() {
+            const accountNumber = document.getElementById('analyticsAccount').value;
+            if (!accountNumber) {
+                document.getElementById('noData').style.display = 'block';
+                document.getElementById('analyticsData').style.display = 'none';
+                return;
+            }
+
+            const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+            const account = accounts.find(acc => acc.accountNumber === accountNumber);
+
+            if (!account || !account.transactions || account.transactions.length === 0) {
+                document.getElementById('noData').style.display = 'block';
+                document.getElementById('analyticsData').style.display = 'none';
+                return;
+            }
+
+            displayAnalytics(account.transactions, accountNumber);
+        }
+
+        function loadAllAnalytics() {
+            const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+            let allTransactions = [];
+
+            accounts.forEach(account => {
+                if (account.transactions) {
+                    allTransactions = allTransactions.concat(account.transactions);
+                }
+            });
+
+            if (allTransactions.length === 0) {
+                document.getElementById('noData').style.display = 'block';
+                document.getElementById('analyticsData').style.display = 'none';
+                return;
+            }
+
+            displayAnalytics(allTransactions, 'All Accounts');
+        }
+
+        function displayAnalytics(transactions, title) {
+            // Calculate statistics
+            const deposits = transactions.filter(t => t.type === 'DEPOSIT' || t.type === 'TRANSFER IN');
+            const withdrawals = transactions.filter(t => t.type === 'WITHDRAW' || t.type === 'TRANSFER OUT');
+            const transfers = transactions.filter(t => t.type.includes('TRANSFER'));
+
+            const totalDep = deposits.reduce((sum, t) => sum + t.amount, 0);
+            const totalWith = withdrawals.reduce((sum, t) => sum + t.amount, 0);
+            const totalTrans = transfers.reduce((sum, t) => sum + t.amount, 0);
+
+            document.getElementById('totalDeposits').textContent = '$' + totalDep.toFixed(2);
+            document.getElementById('totalWithdrawals').textContent = '$' + totalWith.toFixed(2);
+            document.getElementById('totalTransfers').textContent = '$' + totalTrans.toFixed(2);
+
+            // Prepare data for charts
+            const transactionTypes = {};
+            transactions.forEach(t => {
+                transactionTypes[t.type] = (transactionTypes[t.type] || 0) + 1;
+            });
+
+            // Destroy existing charts if they exist
+            if (typeChart) typeChart.destroy();
+            if (depWithChart) depWithChart.destroy();
+            if (timelineChart) timelineChart.destroy();
+            if (amountChart) amountChart.destroy();
+
+            // Chart 1: Transaction Types Distribution (Pie)
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            typeChart = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(transactionTypes),
+                    datasets: [{
+                        data: Object.values(transactionTypes),
+                        backgroundColor: [
+                            '#3498db',
+                            '#e74c3c',
+                            '#2ecc71',
+                            '#f39c12',
+                            '#9b59b6',
+                            '#1abc9c'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15 }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Deposits vs Withdrawals (Bar)
+            const depWithCtx = document.getElementById('depWithChart').getContext('2d');
+            depWithChart = new Chart(depWithCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Deposits', 'Withdrawals', 'Transfers'],
+                    datasets: [{
+                        label: 'Amount ($)',
+                        data: [totalDep, totalWith, totalTrans],
+                        backgroundColor: [
+                            '#27ae60',
+                            '#e74c3c',
+                            '#f39c12'
+                        ],
+                        borderColor: ['#229954', '#c0392b', '#d68910'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: (v) => '$' + v }
+                        }
+                    }
+                }
+            });
+
+            // Chart 3: Transaction Timeline (Line)
+            const sortedTrans = [...transactions].sort((a, b) => 
+                new Date(a.date) - new Date(b.date)
+            );
+            
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+            timelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: sortedTrans.map(t => new Date(t.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Balance After Transaction ($)',
+                        data: sortedTrans.map(t => t.balance_after),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: (v) => '$' + v }
+                        }
+                    }
+                }
+            });
+
+            // Chart 4: Amount Distribution (Histogram/Bar)
+            const amountBuckets = { 'Under $100': 0, '$100-$500': 0, '$500-$1000': 0, 'Over $1000': 0 };
+            transactions.forEach(t => {
+                if (t.amount < 100) amountBuckets['Under $100']++;
+                else if (t.amount < 500) amountBuckets['$100-$500']++;
+                else if (t.amount < 1000) amountBuckets['$500-$1000']++;
+                else amountBuckets['Over $1000']++;
+            });
+
+            const amountCtx = document.getElementById('amountChart').getContext('2d');
+            amountChart = new Chart(amountCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(amountBuckets),
+                    datasets: [{
+                        label: 'Number of Transactions',
+                        data: Object.values(amountBuckets),
+                        backgroundColor: '#9b59b6',
+                        borderColor: '#8e44ad',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('analyticsData').style.display = 'block';
+            document.getElementById('noData').style.display = 'none';
+        }
+
+        // Load all analytics on page load
+        window.addEventListener('DOMContentLoaded', loadAllAnalytics);
+    </script>
+</body>
+</html>

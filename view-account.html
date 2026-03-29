@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Account - Banking System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">💳 Banking System</h1>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="accounts-list.html">All Accounts</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>View Account Details</h2>
+            
+            <div class="form-box">
+                <div class="form-group">
+                    <label for="searchAccount">Enter Account Number:</label>
+                    <div class="input-group">
+                        <input type="text" id="searchAccount" placeholder="e.g., ACC001">
+                        <button onclick="searchAccount()" class="btn">Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="accountInfo" class="account-details" style="display: none;">
+                <h3>Account Information</h3>
+                <div class="info-box">
+                    <p><strong>Account Number:</strong> <span id="accNum"></span></p>
+                    <p><strong>Owner Name:</strong> <span id="accName"></span></p>
+                    <p><strong>Account Type:</strong> <span id="accType"></span></p>
+                    <p><strong>Current Balance:</strong> <span id="accBalance" class="balance"></span></p>
+                </div>
+                <a href="index.html" class="btn btn-secondary">Back to Home</a>
+            </div>
+
+            <div id="notFound" class="message error" style="display: none;">
+                Account not found. Please check the account number.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Banking System. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function searchAccount() {
+            const accountNumber = document.getElementById('searchAccount').value;
+            const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+            const account = accounts.find(acc => acc.accountNumber === accountNumber);
+
+            if (account) {
+                document.getElementById('accNum').textContent = account.accountNumber;
+                document.getElementById('accName').textContent = account.ownerName;
+                document.getElementById('accType').textContent = account.accountType;
+                document.getElementById('accBalance').textContent = '$' + account.balance.toFixed(2);
+                document.getElementById('accountInfo').style.display = 'block';
+                document.getElementById('notFound').style.display = 'none';
+            } else {
+                document.getElementById('accountInfo').style.display = 'none';
+                document.getElementById('notFound').style.display = 'block';
+            }
+        }
+
+        document.getElementById('searchAccount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchAccount();
+        });
+    </script>
+</body>
+</html>

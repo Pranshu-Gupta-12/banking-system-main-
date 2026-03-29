@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer - Banking System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">💳 Banking System</h1>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="accounts-list.html">All Accounts</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>Transfer Money</h2>
+            
+            <form id="transferForm" class="form-box">
+                <div class="form-group">
+                    <label for="fromAccount">From Account Number:</label>
+                    <input type="text" id="fromAccount" placeholder="e.g., ACC001" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="toAccount">To Account Number:</label>
+                    <input type="text" id="toAccount" placeholder="e.g., ACC002" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="transferAmount">Transfer Amount:</label>
+                    <input type="number" id="transferAmount" placeholder="0.00" step="0.01" min="0.01" required>
+                </div>
+
+                <button type="submit" class="btn">Transfer</button>
+                <a href="index.html" class="btn btn-secondary">Back to Home</a>
+            </form>
+
+            <div id="transferMessage" class="message"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Banking System. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('transferForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fromAccount = document.getElementById('fromAccount').value;
+            const toAccount = document.getElementById('toAccount').value;
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            
+            let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+            const sender = accounts.find(acc => acc.accountNumber === fromAccount);
+            const receiver = accounts.find(acc => acc.accountNumber === toAccount);
+
+            const msgDiv = document.getElementById('transferMessage');
+            
+            if (!sender) {
+                msgDiv.textContent = '✗ Sender account not found!';
+                msgDiv.classList.add('error');
+                msgDiv.classList.remove('success');
+                return;
+            }
+
+            if (!receiver) {
+                msgDiv.textContent = '✗ Receiver account not found!';
+                msgDiv.classList.add('error');
+                msgDiv.classList.remove('success');
+                return;
+            }
+
+            if (fromAccount === toAccount) {
+                msgDiv.textContent = '✗ Cannot transfer to the same account!';
+                msgDiv.classList.add('error');
+                msgDiv.classList.remove('success');
+                return;
+            }
+
+            if (amount <= 0) {
+                msgDiv.textContent = '✗ Amount must be positive!';
+                msgDiv.classList.add('error');
+                msgDiv.classList.remove('success');
+                return;
+            }
+
+            if (amount > sender.balance) {
+                msgDiv.textContent = `✗ Insufficient funds! Available balance: $${sender.balance.toFixed(2)}`;
+                msgDiv.classList.add('error');
+                msgDiv.classList.remove('success');
+                return;
+            }
+
+            // Process transfer
+            sender.balance -= amount;
+            receiver.balance += amount;
+
+            // Record transactions
+            if (!sender.transactions) sender.transactions = [];
+            if (!receiver.transactions) receiver.transactions = [];
+
+            sender.transactions.push({
+                type: 'TRANSFER OUT',
+                amount: amount,
+                balance_after: sender.balance,
+                date: new Date().toISOString()
+            });
+
+            receiver.transactions.push({
+                type: 'TRANSFER IN',
+                amount: amount,
+                balance_after: receiver.balance,
+                date: new Date().toISOString()
+            });
+
+            localStorage.setItem('accounts', JSON.stringify(accounts));
+            
+            msgDiv.textContent = `✓ $${amount.toFixed(2)} transferred from ${fromAccount} to ${toAccount}!`;
+            msgDiv.classList.remove('error');
+            msgDiv.classList.add('success');
+            
+            document.getElementById('transferForm').reset();
+        });
+    </script>
+</body>
+</html>
